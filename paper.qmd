@@ -1,0 +1,131 @@
+---
+title: "My title"
+subtitle: "My subtitle if needed"
+author: 
+  - First author
+  - Another author
+thanks: "Code and data are available at: LINK."
+date: today
+date-format: long
+abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+format: pdf
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(tidymodels)
+library(modelsummary)
+library(nflverse)
+```
+
+
+# Introduction
+
+You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+
+The remainder of this paper is structured as follows. @sec-data....
+
+
+
+# Data {#sec-data}
+
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+nfl_2020 <- read_csv(here::here("data/analysis_data.csv"))
+nfl_2020_train <- nfl_2020 |>
+  filter(week<=9)
+nfl_2020_test <- nfl_2020 |>
+  filter(week>9)
+```
+
+
+
+```{r}
+#| label: tbl-modelresults
+#| tbl-cap: "Explanatory models of nfl"
+#| echo: false
+
+first_model_tidymodels <-
+  linear_reg() |>
+  set_engine(engine = "lm") |>
+  fit(
+    passing_epa ~ completions + attempts + passing_yards,
+    data = nfl_2020_train
+  )
+
+second_model_tidymodels <-
+  linear_reg() |>
+  set_engine(engine = "lm") |>
+  fit(
+    passing_epa ~ completions + attempts + passing_yards + sacks,
+    data = nfl_2020_train
+  )
+
+modelsummary(list("Model 1" = first_model_tidymodels,
+                  "Model 2" = second_model_tidymodels))
+```
+
+Talk way more about it. 
+
+```{r}
+#| echo: false
+
+predicted_results <- second_model_tidymodels |>
+  predict(new_data = nfl_2020_test) |>
+  cbind(nfl_2020_test) |>
+  select(recent_team, week, passing_epa, .pred) |>
+  arrange(recent_team,week) |>
+  rename(predicted_passing_epa = .pred) 
+```
+
+
+# Model
+
+The goal of our modelling strategy is twofold. Firstly,...
+
+## Model set-up
+
+
+\begin{align} 
+y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
+\mu_i &= \beta_0+\beta_1 x_{1i} + \beta_2 x_{2i}
+\end{align}
+
+where $y_i$ refers to the total expected points added on pass attempts and sacks of some individual $i$, $x_{1i}$ refers the number of completed passes of some individual $i$......
+
+# Results
+
+```{r}
+predicted_results |>
+  ggplot(aes(x= passing_epa, y= predicted_passing_epa)) + geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "red") #diagonal line
+```
+
+
+
+
+# Discussion
+
+
+
+\newpage
+
+
+
+\newpage
+
+
+# References
+
+
